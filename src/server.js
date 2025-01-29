@@ -1,5 +1,11 @@
 // importing express
 const express = require('express');
+// import cors
+const cors = require('cors');
+
+// import morgan
+const morgan = require('morgan');
+
 // importing dotenv
 const dotenv = require('dotenv');
 
@@ -20,11 +26,20 @@ const app = express();
 // Body parse for json data
 app.use(express.json());
 
+// allow cors
+app.use(cors());
+
+// use morgan only in development
+if (process.env.NODE_ENV === 'development') {
+  app.use(morgan('dev'));
+}
+
+// morgan
 // define a port
-const port = 8080;
+const port = process.env.PORT;
 
 // define a hostname
-const hostname = "127.0.0.1";
+const hostname = process.env.HOSTNAME;
 
 
 // define root and functionalities

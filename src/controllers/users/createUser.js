@@ -1,50 +1,75 @@
 const bcrypt = require('bcrypt');
 const User = require('../../database/models/user');
 
-const updateUser = async (req, res) => {
+const createUser = async (req, res) => {
   try {
-    const { id } = req.params; // Assuming user ID is passed as a route parameter
     const { firstName, lastName, email, age, password } = req.body;
 
-    // Check if user exists
-    const user = await User.findById(id);
-    if (!user) {
-      return res.status(404).json({
+    // validate fields
+    if (!firstName) {
+      return res.status(400).json({
         ok: false,
-        message: 'User not found'
+        message: 'Firstname is required'
       });
     }
 
-    // Validate email uniqueness if email is being updated
-    if (email && email !== user.email) {
-      const emailExists = await User.findOne({ email });
-      if (emailExists) {
-        return res.status(400).json({
-          ok: false,
-          message: `Email ${email} is already in use`
-        });
-      }
+    // validate fields
+    if (!lastName) {
+      return res.status(400).json({
+        ok: false,
+        message: 'Lastname is required'
+      });
     }
 
-    // Update fields if provided
-    if (firstName) user.firstName = firstName;
-    if (lastName) user.lastName = lastName;
-    if (email) user.email = email;
-    if (age) user.age = age;
-
-    // Hash the new password if provided
-    if (password) {
-      user.password = bcrypt.hashSync(password, parseInt(process.env.SALT_NUMBER));
+    // validate fields
+    if (!email) {
+      return res.status(400).json({
+        ok: false,
+        message: 'Email is required'
+      });
     }
 
-    // Save the updated user
-    await user.save();
+    // validate fields
+    if (!age) {
+      return res.status(400).json({
+        ok: false,
+        message: 'Age is required'
+      });
+    }
 
-    // Return success response
-    return res.status(200).json({
+    // validate fields
+    if (!password) {
+      return res.status(400).json({
+        ok: false,
+        message: 'Password is required'
+      });
+    }
+
+    // hashing the password
+    const hashedPassword = bcrypt.hashSync(password, parseInt(process.env.SALT_NUMBER));
+
+    // check if there is a user with the same email
+    const userExists = await User.findOne({ email });
+    if (userExists) {
+      return res.status(400).json({
+        ok: false,
+        message: `User with ${email} already exists`
+      });
+    }
+
+    // create a user
+    await User.create({
+      firstName,
+      lastName,
+      email,
+      age,
+      password: hashedPassword
+    });
+
+    // return res
+    return res.status(201).json({
       ok: true,
-      message: `User (${user.firstName}) updated successfully`,
-      user // Optionally return the updated user
+      message: `User (${firstName}) is created successfully`
     });
   } catch (error) {
     return res.status(500).json({
@@ -54,4 +79,4 @@ const updateUser = async (req, res) => {
   }
 };
 
-module.exports = updateUser;
+module.exports = createUser;

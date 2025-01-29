@@ -7,12 +7,14 @@ const getUserController = require('../controllers/users/getUser');
 const createUserController = require('../controllers/users/createUser');
 const updateUserController = require('../controllers/users/updateUser');
 const deleteUserController = require('../controllers/users/deleteUser'); 
+const authMiddleware = require('../../middleware/authMiddleware');
+
 
 // create a router instance
 const router = express.Router();
 
 // Get users route 
-router.get('/users', getUsersController);
+router.get('/users',authMiddleware, getUsersController);
 
 // Get user route
 router.get('/users/:userId', getUserController);
